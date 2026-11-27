@@ -37,6 +37,11 @@ export const metadata: Metadata = {
   "Ekdhun",
   "Ekdhun music",
   "Ekdhun listening rooms",
+  "Ek Dhun",
+
+  "Sync Music",
+  "Beat Sync",
+  "beatsync",
 
   // Core product keywords
   "listen to music together",
@@ -97,9 +102,9 @@ export const metadata: Metadata = {
   "music synchronization website",
 ],
 
-  authors: [{ name: "Ekdhun" }],
-  creator: "Ekdhun",
-  publisher: "Ekdhun",
+  authors: [{ name: "Sayan Biswas" }],
+  creator: "Sayan Biswas",
+  publisher: "Sayan Biswas",
 
   alternates: {
     canonical: "/",
@@ -127,7 +132,7 @@ export const metadata: Metadata = {
     title: "Ekdhun — Listen Together, Anywhere",
     description,
     images: ["/og-image.png"],
-    creator: "@ekdhun",
+    creator: "@sudo_sayan",
   },
 
   robots: {
