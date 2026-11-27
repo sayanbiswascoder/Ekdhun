@@ -5,7 +5,7 @@ import React from "react";
 import SessionInfo from "@/app/room/[code]/components/SessionInfo";
 import RoomClient from "@/app/room/[code]/RoomClient";
 import { FaClockRotateLeft } from "react-icons/fa6";
-import { MdArrowBackIosNew };
+import { MdArrowBackIosNew } from "react-icons/md";;
 
 export default function RoomPageClient({ code }: { code: string }) {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
