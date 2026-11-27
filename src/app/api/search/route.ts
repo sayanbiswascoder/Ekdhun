@@ -8,36 +8,45 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing query parameter' }, { status: 400 });
   }
   try {
-    const response = await fetch(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, {
+    const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+
+let response: Response | null = null;
+let lastError: unknown;
+
+for (let attempt = 0; attempt < 2; attempt++) {
+  try {
+    response = await fetch(youtubeUrl, {
+      signal: AbortSignal.timeout(8000),
       headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        Accept: 'text/html',
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Accept: "text/html",
       },
     });
-    const html = await response.text();
 
-    // Extract ytInitialData JSON
-    const match = html.match(/var ytInitialData = (\{.+?\});/s);
-    if (!match) {
-      return NextResponse.json({ error: 'Failed to extract data' }, { status: 500 });
-    }
-    const data = JSON.parse(match[1]);
-    const contents =
-      data.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents?.[0]
-        ?.itemSectionRenderer?.contents || [];
-    const results = [];
-    for (const item of contents) {
-      if (!item.videoRenderer) continue;
-      const vr = item.videoRenderer;
-      const videoId = vr.videoId;
-      const title = vr.title?.runs?.[0]?.text || '';
-      const thumbnails = vr.thumbnail?.thumbnails;
-      const thumbnail = thumbnails?.[thumbnails.length - 1]?.url || '';
-      results.push({ id: videoId, title, thumbnail });
-      if (results.length >= 10) break;
-    }
-    return NextResponse.json({ results });
+    if (response.ok) break;
+
+    console.error("YouTube response:", response.status);
+
+    if (response.status < 500 && response.status !== 429) break;
+  } catch (error) {
+    lastError = error;
+    console.error(`YouTube attempt ${attempt + 1} failed:`, error);
+  }
+
+  if (attempt === 0) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+}
+
+if (!response?.ok) {
+  console.error("YouTube search failed:", lastError);
+
+  return NextResponse.json(
+    { error: "YouTube search temporarily unavailable" },
+    { status: 503 }
+  );
+}
   } catch (e) {
     console.error('Search error', e);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

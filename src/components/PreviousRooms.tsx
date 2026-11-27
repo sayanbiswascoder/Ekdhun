@@ -138,16 +138,16 @@ setRooms(roomsWithRoles as PreviousRoom[]);
   }
 
   return (
-    <div className="relative -mx-1">
-      <div
-  ref={scrollContainerRef}
-  className="flex gap-3 overflow-x-auto overflow-y-hidden scrollbar-hide"
->
+    <div className="relative w-full min-w-0 max-w-full overflow-hidden">
+  <div
+    ref={scrollContainerRef}
+    className="flex w-full min-w-0 max-w-full flex-nowrap gap-3 overflow-x-auto overflow-y-hidden scrollbar-hide"
+  >
   {rooms.map((room) => (
     <Link
       key={room.id}
       href={`/room/${room.room_code}`}
-      className="w-[165px] min-w-[165px] shrink-0 snap-start flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#07111f] px-4 py-3 transition-colors hover:border-cyan-400/40 hover:bg-cyan-400/5"
+      className="w-[165px] min-w-[165px] flex-none shrink-0 snap-start flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#07111f] px-4 py-3 transition-colors hover:border-cyan-400/40 hover:bg-cyan-400/5"
     >
       <div className="min-w-0 flex-1">
   <p className="truncate text-sm font-medium text-white">

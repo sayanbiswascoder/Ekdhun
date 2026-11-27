@@ -18,6 +18,7 @@ import {
 import { useUser } from "@/components/providers/UserProvider";
 import { createRoom, joinRoom } from "@/lib/rooms";
 import { generateGuestName } from "@/lib/identity";
+import { generateRoomName } from "@/lib/roomName";
 import PreviousRooms from "@/components/PreviousRooms";
 
 type Mode = "create" | "join";
@@ -34,7 +35,7 @@ export default function Home() {
   } = useUser();
 
   const [username, setUsername] = useState("");
-  const [roomName, setRoomName] = useState("Late Night Vibes");
+  const [roomName, setRoomName] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const [mode, setMode] = useState<Mode>("create");
   const [loading, setLoading] = useState(false);
@@ -43,6 +44,10 @@ export default function Home() {
   useEffect(() => {
     if (profile?.username) setUsername(profile.username);
   }, [profile?.username]);
+
+  useEffect(() => {
+    setRoomName(generateRoomName());
+  }, []);
 
   async function handleContinue() {
     setError("");
@@ -116,7 +121,7 @@ export default function Home() {
         
 {/* Main content */}
 <section className="flex flex-1 items-center justify-center py-6 sm:py-8">
-  <div className="grid w-full max-w-5xl items-center gap-8 lg:grid-cols-[1fr_390px] lg:gap-14">
+  <div className="grid w-full min-w-0 max-w-5xl grid-cols-[minmax(0,1fr)] items-center gap-8 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-14">
 
     {/* Left: Compact brand statement */}
     <div className="home-intro max-w-xl">
@@ -164,7 +169,7 @@ export default function Home() {
     </div>
 
     {/* Right: Room panel + previous rooms */}
-    <div className="home-panel w-full space-y-5">
+    <div className="home-panel w-full min-w-0 max-w-full space-y-5">
 
       {/* Existing Create / Join card */}
       <div className="rounded-2xl border border-white/[0.09] bg-[#101927]/90 p-5 shadow-[0_24px_100px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6">
@@ -195,14 +200,14 @@ export default function Home() {
             className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 pr-12 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
           />
 
-          <button
+          {!profile?.username && <button
             type="button"
             title="Generate a name"
             onClick={() => setUsername(generateGuestName())}
             className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-cyan-300"
           >
             <Dices size={17} />
-          </button>
+          </button>}
         </div>
 
         {/* Mode tabs */}
@@ -247,13 +252,23 @@ export default function Home() {
               <label className="mb-2 block text-xs font-medium text-slate-300">
                 ROOM NAME
               </label>
-              <input
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                maxLength={60}
-                placeholder="Give your room a name"
-                className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 text-sm outline-none transition-all placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
-              />
+              <div className="relative mb-5">
+                <input
+                  value={roomName}
+                  onChange={(e) => setRoomName(e.target.value)}
+                  maxLength={60}
+                  placeholder="Give your room a name"
+                  className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 text-sm outline-none transition-all placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setRoomName(generateRoomName())}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-cyan-300"
+                  title="Generate another room name"
+                >
+                  <Dices size={17} />
+                </button>
+              </div>
             </>
           ) : (
             <>
@@ -280,12 +295,13 @@ export default function Home() {
 
 
 {/* Previous rooms - horizontal carousel */}
-<div className="mt-5">
-  <div className="mb-2 flex items-center justify-between">
+<div className="mt-5 w-full min-w-0 max-w-full">
+  <div className="mb-2 flex items-center justify-between gap-2">
     <label className="text-xs font-medium text-slate-300">
       RECENT ROOMS
     </label>
-    <span className="text-[10px] text-slate-500">
+
+    <span className="shrink-0 text-[10px] text-slate-500">
       Scroll to explore →
     </span>
   </div>
