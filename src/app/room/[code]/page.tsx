@@ -1,5 +1,6 @@
-
 import RoomPageClient from "./RoomPageClient";
+
+export const instant = false;
 
 export default async function RoomPage({
   params,
