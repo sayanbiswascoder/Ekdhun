@@ -1,45 +1,54 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  AudioWaveform,
-  Headphones,
-  Users,
-  Plus,
   ArrowRight,
-  Music2,
-  Radio,
-  Loader2,
+  AudioLines,
+  Check,
+  Copy,
   Dices,
+  Headphones,
+  Loader2,
+  Plus,
+  Users,
 } from "lucide-react";
 
-import { createGuest } from "@/lib/auth/guest";
+import { useUser } from "@/components/providers/UserProvider";
 import { createRoom, joinRoom } from "@/lib/rooms";
 import { generateGuestName } from "@/lib/identity";
+import PreviousRooms from "@/components/PreviousRooms";
+
+type Mode = "create" | "join";
 
 export default function Home() {
   const router = useRouter();
 
+  const {
+    user,
+    profile,
+    loading: authLoading,
+    error: authError,
+    updateUsername,
+  } = useUser();
+
   const [username, setUsername] = useState("");
   const [roomName, setRoomName] = useState("Late Night Vibes");
   const [roomCode, setRoomCode] = useState("");
-
-  const [mode, setMode] = useState<"create" | "join">("create");
+  const [mode, setMode] = useState<Mode>("create");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setUsername(generateGuestName())
-  }, [])
-  
+    if (profile?.username) setUsername(profile.username);
+  }, [profile?.username]);
 
   async function handleContinue() {
     setError("");
 
-    if (username.trim().length < 2) {
-      setError("Please enter a username (at least 2 characters).");
+    if (username.trim().length < 2 || username.trim().length > 30) {
+      setError("Your name must be between 2 and 30 characters.");
       return;
     }
 
@@ -49,14 +58,14 @@ export default function Home() {
     }
 
     if (mode === "join" && roomCode.trim().length !== 6) {
-      setError("Please enter a valid 6-character room code.");
+      setError("Enter a valid 6-character room code.");
       return;
     }
 
     try {
       setLoading(true);
 
-      await createGuest(username);
+      await updateUsername(username);
 
       if (mode === "create") {
         const room = await createRoom(roomName);
@@ -66,242 +75,277 @@ export default function Home() {
         router.push(`/room/${roomCode.trim().toUpperCase()}`);
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong."
-      );
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
   }
 
+  const ready = !authLoading && !!user && !authError;
+
   return (
-    <main className="min-h-screen bg-[#07111f] text-white overflow-hidden">
-      {/* Background effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-200px] left-1/2 -translate-x-1/2
-          w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[130px]" />
-        <div className="absolute bottom-[-200px] right-[-100px]
-          w-[400px] h-[400px] rounded-full bg-blue-500/10 blur-[120px]" />
+    <main className="relative min-h-screen overflow-hidden bg-[#080D18] text-white selection:bg-cyan-400/30">
+
+      {/* Ambient background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="ambient-glow absolute -top-64 left-1/2 h-[550px] w-[550px] -translate-x-1/2 rounded-full bg-cyan-500/[0.07] blur-[130px]" />
+        <div className="ambient-glow-delay absolute -bottom-80 -right-40 h-[500px] w-[500px] rounded-full bg-indigo-500/[0.07] blur-[140px]" />
+
+        <div className="absolute inset-0 opacity-[0.025] [background-image:linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] [background-size:64px_64px]" />
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6">
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col px-6">
+
         {/* Navbar */}
-        <nav className="h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-cyan-400/10
-              border border-cyan-400/20 flex items-center justify-center p-1">
+        <header className="flex h-[76px] items-center justify-between border-b border-white/[0.07]">
+          <a href="/" className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] text-cyan-300 p-1">
               <EkdhunIcon />
             </div>
-            <span className="text-xl font-bold tracking-tight">
-              Ek<span className="text-cyan-400">dhun</span>
+            <span className="text-lg font-semibold tracking-tight">
+              ek<span className="text-cyan-300">dhun</span>
             </span>
+          </a>
+
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            {authLoading ? "Connecting..." : "Ready to listen"}
           </div>
+        </header>
 
-          <div className="text-xs text-slate-400 border border-white/10
-            rounded-full px-4 py-2">
-            No account required
-          </div>
-        </nav>
+        
+{/* Main content */}
+<section className="flex flex-1 items-center justify-center py-6 sm:py-8">
+  <div className="grid w-full max-w-5xl items-center gap-8 lg:grid-cols-[1fr_390px] lg:gap-14">
 
-        {/* Hero */}
-        <section className="grid lg:grid-cols-2 gap-16 items-center
-          min-h-[calc(100vh-80px)] py-12">
+    {/* Left: Compact brand statement */}
+    <div className="home-intro max-w-xl">
+      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3.5 py-2 text-xs text-slate-300">
+        <Headphones size={14} className="text-cyan-300" />
+        A little closer, even when miles apart
+      </div>
 
-          <div>
-            <div className="inline-flex items-center gap-2
-              border border-cyan-400/20 bg-cyan-400/5
-              text-cyan-300 rounded-full px-4 py-2 text-sm mb-7">
-              <Radio size={15} />
-              Music brings us together
-            </div>
+      <div className="mb-5 flex h-10 items-center gap-[5px]">
+        {[18, 30, 43, 25, 38, 48, 24, 36, 17, 30, 44, 20].map(
+          (height, index) => (
+            <span
+              key={index}
+              className="sound-bar w-[3px] rounded-full bg-cyan-300"
+              style={{
+                height: `${height}px`,
+                animationDelay: `${index * 90}ms`,
+              }}
+            />
+          )
+        )}
+      </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold
-              leading-[1.08] tracking-tight">
-              Same music.
-              <br />
-              <span className="text-cyan-400">Same moment.</span>
-            </h1>
+      <h1 className="text-4xl font-semibold leading-[1.08] tracking-[-0.055em] sm:text-5xl lg:text-[62px]">
+        Music is better
+        <br />
+        <span className="text-slate-500">when shared.</span>
+      </h1>
 
-            <p className="text-slate-400 text-lg leading-relaxed
-              mt-7 max-w-lg">
-              Create a room, invite your friends and experience
-              music together. Every beat, perfectly synchronized.
-            </p>
+      <p className="mt-5 max-w-md text-sm leading-6 text-slate-400 sm:text-base sm:leading-7">
+        Create a listening room, invite your people, and
+        experience every beat together — wherever you are.
+      </p>
 
-            <div className="flex flex-wrap gap-6 mt-9 text-sm text-slate-400">
-              <div className="flex items-center gap-2">
-                <Users size={17} className="text-cyan-400" />
-                Listen together
-              </div>
-              <div className="flex items-center gap-2">
-                <Music2 size={17} className="text-cyan-400" />
-                Shared queue
-              </div>
-              <div className="flex items-center gap-2">
-                <Headphones size={17} className="text-cyan-400" />
-                Guest access
-              </div>
-            </div>
-          </div>
+      <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-slate-400 sm:text-sm">
+        <div className="flex items-center gap-2">
+          <AudioLines size={16} className="text-cyan-300" />
+          Synchronized playback
+        </div>
+        <div className="flex items-center gap-2">
+          <Users size={16} className="text-cyan-300" />
+          Shared listening
+        </div>
+      </div>
+    </div>
 
-          {/* Room form */}
-          <div className="w-full max-w-md mx-auto">
-            <div className="rounded-3xl border border-white/10
-              bg-[#101e2e]/90 backdrop-blur-xl p-7 shadow-2xl">
+    {/* Right: Room panel + previous rooms */}
+    <div className="home-panel w-full space-y-5">
 
-              <h2 className="text-2xl font-semibold">
-                Start listening
-              </h2>
+      {/* Existing Create / Join card */}
+      <div className="rounded-2xl border border-white/[0.09] bg-[#101927]/90 p-5 shadow-[0_24px_100px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6">
 
-              <p className="text-slate-400 text-sm mt-2 mb-7">
-                Enter your name to get started.
-              </p>
+        <div className="mb-5">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-cyan-300">
+            Get started
+          </p>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight">
+            Your next listening session.
+          </h2>
+          <p className="mt-1.5 text-sm text-slate-400">
+            Create a new room or join your friends.
+          </p>
+        </div>
 
-              <div className="flex items-center justify-between gap-3">
-                <label htmlFor="guest-username" className="text-sm text-slate-300">
-                  Your display name
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setUsername(generateGuestName())}
-                  className="inline-flex items-center gap-1.5 text-xs text-cyan-300
-                    hover:text-cyan-200 transition-colors"
-                >
-                  <Dices size={14} />
-                  Generate another
-                </button>
-              </div>
+        {/* Display name */}
+        <label className="mb-2 block text-xs font-medium text-slate-300">
+          YOUR NAME
+        </label>
 
+        <div className="relative mb-5">
+          <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            maxLength={30}
+            placeholder="Enter your display name"
+            className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 pr-12 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+          />
+
+          <button
+            type="button"
+            title="Generate a name"
+            onClick={() => setUsername(generateGuestName())}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-cyan-300"
+          >
+            <Dices size={17} />
+          </button>
+        </div>
+
+        {/* Mode tabs */}
+        <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-white/[0.06] bg-[#080F1B] p-1">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("create");
+              setError("");
+            }}
+            className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ${
+              mode === "create"
+                ? "bg-[#1B3442] text-cyan-200 shadow-sm"
+                : "text-slate-500 hover:text-slate-200"
+            }`}
+          >
+            <Plus size={16} />
+            Create room
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMode("join");
+              setError("");
+            }}
+            className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ${
+              mode === "join"
+                ? "bg-[#1B3442] text-cyan-200 shadow-sm"
+                : "text-slate-500 hover:text-slate-200"
+            }`}
+          >
+            <Users size={16} />
+            Join room
+          </button>
+        </div>
+
+        {/* Room input */}
+        <div key={mode} className="mode-content">
+          {mode === "create" ? (
+            <>
+              <label className="mb-2 block text-xs font-medium text-slate-300">
+                ROOM NAME
+              </label>
               <input
-                id="guest-username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                maxLength={30}
-                placeholder="e.g. playful-rabbit"
-                className="w-full mt-2 mb-2 bg-[#07111f]
-                  border border-white/10 rounded-xl px-4 py-3
-                  outline-none focus:border-cyan-400
-                  transition-colors"
+                value={roomName}
+                onChange={(e) => setRoomName(e.target.value)}
+                maxLength={60}
+                placeholder="Give your room a name"
+                className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 text-sm outline-none transition-all placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
               />
-              <p className="text-xs text-slate-500 mb-6">
-                We picked a fun guest name for you. Keep it or edit it.
-              </p>
+            </>
+          ) : (
+            <>
+              <label className="mb-2 block text-xs font-medium text-slate-300">
+                ROOM CODE
+              </label>
+              <input
+                value={roomCode}
+                onChange={(e) =>
+                  setRoomCode(
+                    e.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9]/g, "")
+                      .slice(0, 6)
+                  )
+                }
+                maxLength={6}
+                placeholder="Enter your 6-character code"
+                className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 text-sm uppercase tracking-[0.25em] outline-none transition-all placeholder:normal-case placeholder:tracking-normal placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+              />
+            </>
+          )}
+        </div>
 
-              {/* Mode selection */}
-              <div className="grid grid-cols-2 bg-[#07111f]
-                p-1 rounded-xl mb-6">
-                <button
-                  onClick={() => setMode("create")}
-                  className={`py-3 rounded-lg text-sm font-medium
-                    flex items-center justify-center gap-2
-                    ${mode === "create"
-                      ? "bg-cyan-400 text-[#07111f]"
-                      : "text-slate-400 hover:text-white"}`}
-                >
-                  <Plus size={17} />
-                  Create room
-                </button>
 
-                <button
-                  onClick={() => setMode("join")}
-                  className={`py-3 rounded-lg text-sm font-medium
-                    flex items-center justify-center gap-2
-                    ${mode === "join"
-                      ? "bg-cyan-400 text-[#07111f]"
-                      : "text-slate-400 hover:text-white"}`}
-                >
-                  <Users size={17} />
-                  Join room
-                </button>
-              </div>
+{/* Previous rooms - horizontal carousel */}
+<div className="mt-5">
+  <div className="mb-2 flex items-center justify-between">
+    <label className="text-xs font-medium text-slate-300">
+      RECENT ROOMS
+    </label>
+    <span className="text-[10px] text-slate-500">
+      Scroll to explore →
+    </span>
+  </div>
 
-              {mode === "create" ? (
-                <>
-                  <label className="text-sm text-slate-300">
-                    Room name
-                  </label>
-                  <input
-                    value={roomName}
-                    onChange={(e) => setRoomName(e.target.value)}
-                    maxLength={60}
-                    placeholder="Give your room a name"
-                    className="w-full mt-2 bg-[#07111f]
-                      border border-white/10 rounded-xl px-4 py-3
-                      outline-none focus:border-cyan-400"
-                  />
-                </>
-              ) : (
-                <>
-                  <label className="text-sm text-slate-300">
-                    Room code
-                  </label>
-                  <input
-                    value={roomCode}
-                    onChange={(e) =>
-                      setRoomCode(
-                        e.target.value
-                          .toUpperCase()
-                          .replace(/[^A-Z0-9]/g, "")
-                          .slice(0, 6)
-                      )
-                    }
-                    maxLength={6}
-                    placeholder="Enter 6-character code"
-                    className="w-full mt-2 bg-[#07111f]
-                      border border-white/10 rounded-xl px-4 py-3
-                      outline-none focus:border-cyan-400
-                      tracking-widest uppercase"
-                  />
-                </>
-              )}
+  <PreviousRooms userId={user?.id ?? null} />
+</div>
 
-              {error && (
-                <p className="text-red-400 text-sm mt-4">
-                  {error}
-                </p>
-              )}
 
-              <button
-                onClick={handleContinue}
-                disabled={loading}
-                className="w-full mt-6 py-4 rounded-xl
-                  bg-cyan-400 hover:bg-cyan-300
-                  text-[#07111f] font-semibold
-                  flex items-center justify-center gap-2
-                  transition-colors disabled:opacity-50"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={19} className="animate-spin" />
-                    Please wait...
-                  </>
-                ) : (
-                  <>
-                    {mode === "create"
-                      ? "Create listening room"
-                      : "Join listening room"}
-                    <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
+        {(error || authError) && (
+          <p className="mt-3 text-sm text-red-400">
+            {error || authError}
+          </p>
+        )}
 
-              <p className="text-xs text-slate-500 text-center mt-5">
-                By continuing, you agree to use Ekdhun responsibly.
-              </p>
-            </div>
-          </div>
-        </section>
+        <button
+          type="button"
+          onClick={handleContinue}
+          disabled={loading || !ready}
+          className="group mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 py-3 text-sm font-semibold text-[#07111B] transition-all duration-200 hover:bg-cyan-200 hover:shadow-[0_0_28px_rgba(103,232,249,0.16)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading || authLoading ? (
+            <>
+              <Loader2 size={17} className="animate-spin" />
+              {authLoading ? "Preparing your session..." : "Please wait..."}
+            </>
+          ) : (
+            <>
+              {mode === "create" ? "Create listening room" : "Join listening room"}
+              <ArrowRight
+                size={17}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+              />
+            </>
+          )}
+        </button>
 
-        <footer className="border-t border-white/5 py-6
-          text-center text-xs text-slate-500">
-          Made for music lovers. ©2026 Ekdhun.
+        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+          <Check size={13} className="text-emerald-400" />
+          Free to use · No account required
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+        {/* Footer */}
+        <footer className="flex flex-col items-center justify-between gap-3 border-t border-white/[0.07] py-6 text-xs text-slate-500 sm:flex-row">
+          <span>© 2026 Ekdhun</span>
+          <span className="flex items-center gap-1.5">
+            Made for people who love music.
+            <AudioLines size={13} className="text-cyan-300" />
+          </span>
         </footer>
       </div>
     </main>
   );
 }
 
-const EkdhunIcon = () => (
+const EkdhunIcon = (props) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="512"
@@ -338,4 +382,3 @@ const EkdhunIcon = () => (
     </defs>
   </svg>
 );
-

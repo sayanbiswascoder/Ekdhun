@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import YouTubePlayer from "@/components/YouTubePlayer";
-import { generateGuestName } from "@/lib/identity";
+import { useUser } from "@/components/providers/UserProvider";
 
 interface Room {
   id: string;
@@ -20,148 +20,141 @@ export default function RoomClient({ code }: { code: string }) {
   const [currentUserId, setCurrentUserId] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    const supabase = createClient();
-    let memberChannel: ReturnType<typeof supabase.channel> | null = null;
-    let roleRefreshTimer: ReturnType<typeof setInterval> | null = null;
+  const {
+    user,
+    loading: authLoading,
+    error: authError,
+  } = useUser();
 
-    async function loadRoom() {
-      try {
-        // A direct room link may be opened in a browser with no auth session.
-        // getSession() safely returns null in that case; getUser() can surface
-        // AuthSessionMissingError when there is no stored session.
-        const {
-          data: { session: existingSession },
-          error: sessionError,
-        } = await supabase.auth.getSession();
+  
+useEffect(() => {
+  if (authLoading) {
+    setLoading(true);
+    return;
+  }
 
-        if (sessionError) throw sessionError;
+  if (authError || !user) {
+    setError(authError || "Unable to authenticate your guest account.");
+    setLoading(false);
+    return;
+  }
 
-        let user = existingSession?.user ?? null;
+  let cancelled = false;
+  const supabase = createClient();
 
-        if (!user) {
-          const { data: signInData, error: signInError } =
-            await supabase.auth.signInAnonymously();
+  let memberChannel: ReturnType<typeof supabase.channel> | null = null;
+  let roleRefreshTimer: ReturnType<typeof setInterval> | null = null;
 
-          if (signInError) throw signInError;
-          if (!signInData.session || !signInData.user) {
-            throw new Error(
-              "Guest sign-in did not create a session. Check that Anonymous Sign-ins are enabled in Supabase Authentication settings."
-            );
-          }
+  async function loadRoom() {
+    try {
+      setError("");
+      setLoading(true);
 
-          user = signInData.user;
-        }
+      const userId = user!.id;
+      setCurrentUserId(userId);
+
+      // The global UserProvider has already authenticated the user
+      // and ensured that their profile exists.
+
+      const { error: joinError } = await supabase.rpc("join_room", {
+        p_room_code: code.toUpperCase(),
+      });
+
+      if (joinError) throw joinError;
+
+      const { data, error: roomError } = await supabase
+        .from("rooms")
+        .select("id, name, room_code, host_id, is_playing")
+        .eq("room_code", code.toUpperCase())
+        .maybeSingle();
+
+      if (roomError) throw roomError;
+      if (!data) throw new Error("Room not found or access denied.");
+      if (cancelled) return;
+
+      const currentRoom = data as Room;
+      setRoom(currentRoom);
+
+      const refreshOwnRole = async () => {
+        const { data: membership, error: membershipError } = await supabase
+          .from("room_members")
+          .select("role")
+          .eq("room_id", currentRoom.id)
+          .eq("user_id", userId)
+          .maybeSingle();
 
         if (cancelled) return;
 
-        setCurrentUserId(user.id);
-
-        // Ensure every guest has a valid profile before calling join_room.
-        const { data: existingProfile, error: profileReadError } = await supabase
-          .from("profiles")
-          .select("id, username")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (profileReadError) throw profileReadError;
-
-        if (!existingProfile) {
-          const username = generateGuestName();
-          const { error: profileInsertError } = await supabase
-            .from("profiles")
-            .insert({ id: user.id, username });
-
-          if (profileInsertError) throw profileInsertError;
+        if (membershipError) {
+          console.error("Unable to refresh room role:", membershipError);
+          return;
         }
 
-        // join_room is idempotent for existing members and adds direct-link visitors.
-        const { error: joinError } = await supabase.rpc("join_room", {
-          p_room_code: code.toUpperCase(),
+        setIsAdmin(
+          userId === currentRoom.host_id || membership?.role === "admin"
+        );
+      };
+
+      await refreshOwnRole();
+
+      memberChannel = supabase
+        .channel(`room-role:${currentRoom.id}:${userId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "room_members",
+            filter: `room_id=eq.${currentRoom.id}`,
+          },
+          async (payload) => {
+            if (cancelled) return;
+
+            const changedUserId =
+              (payload.new as { user_id?: string } | null)?.user_id ??
+              (payload.old as { user_id?: string } | null)?.user_id;
+
+            if (changedUserId && changedUserId !== userId) return;
+
+            await refreshOwnRole();
+          }
+        )
+        .subscribe((status) => {
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            console.error("Live room-role updates are unavailable.");
+          }
         });
 
-        if (joinError) throw joinError;
-
-        // Fetch room only after membership is established (important when RLS
-        // restricts room visibility to members).
-        const { data, error: roomError } = await supabase
-          .from("rooms")
-          .select("id, name, room_code, host_id, is_playing")
-          .eq("room_code", code.toUpperCase())
-          .maybeSingle();
-
-        if (roomError) throw roomError;
-        if (!data) throw new Error("Room not found or access denied.");
-        if (cancelled) return;
-
-        const currentRoom = data as Room;
-        setRoom(currentRoom);
-
-        const refreshOwnRole = async () => {
-          const { data: membership, error: membershipError } = await supabase
-            .from("room_members")
-            .select("role")
-            .eq("room_id", currentRoom.id)
-            .eq("user_id", user.id)
-            .maybeSingle();
-
-          if (cancelled) return;
-          if (membershipError) {
-            console.error("Unable to refresh room role:", membershipError);
-            return;
-          }
-
-          setIsAdmin(
-            user.id === currentRoom.host_id || membership?.role === "admin"
-          );
-        };
-
-        await refreshOwnRole();
-
-        memberChannel = supabase
-          .channel(`room-role:${currentRoom.id}:${user.id}`)
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "room_members",
-              filter: `room_id=eq.${currentRoom.id}`,
-            },
-            async (payload) => {
-              if (cancelled) return;
-              const changedUserId =
-                (payload.new as { user_id?: string } | null)?.user_id ??
-                (payload.old as { user_id?: string } | null)?.user_id;
-              if (changedUserId && changedUserId !== user.id) return;
-              await refreshOwnRole();
-            }
-          )
-          .subscribe((status) => {
-            if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-              console.error("Live room-role updates are unavailable.");
-            }
-          });
-
-        roleRefreshTimer = setInterval(() => void refreshOwnRole(), 2500);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load room.");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+      roleRefreshTimer = setInterval(
+        () => void refreshOwnRole(),
+        2500
+      );
+    } catch (err) {
+      if (!cancelled) {
+        setError(
+          err instanceof Error ? err.message : "Unable to load room."
+        );
       }
+    } finally {
+      if (!cancelled) setLoading(false);
+    }
+  }
+
+  void loadRoom();
+
+  return () => {
+    cancelled = true;
+
+    if (memberChannel) {
+      void supabase.removeChannel(memberChannel);
     }
 
-    void loadRoom();
+    if (roleRefreshTimer) {
+      clearInterval(roleRefreshTimer);
+    }
+  };
+}, [code, user, authLoading, authError]);
 
-    return () => {
-      cancelled = true;
-      if (memberChannel) void supabase.removeChannel(memberChannel);
-      if (roleRefreshTimer) clearInterval(roleRefreshTimer);
-    };
-  }, [code]);
 
   if (loading) {
     return (

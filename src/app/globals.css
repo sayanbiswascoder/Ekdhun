@@ -19,6 +19,91 @@
   }
 }
 
+
+/* Homepage entrance */
+.home-intro {
+  animation: home-enter 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.home-panel {
+  animation: home-enter 850ms cubic-bezier(0.2, 0.7, 0.2, 1) 120ms both;
+}
+
+@keyframes home-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Subtle audio waveform */
+.sound-bar {
+  transform-origin: center;
+  animation: sound-wave 1.15s ease-in-out infinite alternate;
+}
+
+@keyframes sound-wave {
+  from {
+    transform: scaleY(0.45);
+    opacity: 0.55;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Slow ambient background */
+.ambient-glow {
+  animation: ambient-drift 18s ease-in-out infinite alternate;
+}
+
+.ambient-glow-delay {
+  animation: ambient-drift 24s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes ambient-drift {
+  from {
+    transform: translate3d(-2%, 0, 0);
+  }
+  to {
+    transform: translate3d(3%, 12px, 0);
+  }
+}
+
+/* Mode transition */
+.mode-content {
+  animation: mode-enter 220ms ease-out both;
+}
+
+@keyframes mode-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Respect accessibility preferences */
+@media (prefers-reduced-motion: reduce) {
+  .home-intro,
+  .home-panel,
+  .sound-bar,
+  .ambient-glow,
+  .ambient-glow-delay,
+  .mode-content {
+    animation: none !important;
+  }
+}
+
+
 body {
   background: var(--background);
   color: var(--foreground);
