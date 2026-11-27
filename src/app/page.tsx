@@ -89,8 +89,8 @@ export default function Home() {
         <nav className="h-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-cyan-400/10
-              border border-cyan-400/20 flex items-center justify-center">
-              <AudioWaveform className="text-cyan-400" size={24} />
+              border border-cyan-400/20 flex items-center justify-center p-1">
+              <EkdhunIcon />
             </div>
             <span className="text-xl font-bold tracking-tight">
               Ek<span className="text-cyan-400">dhun</span>
@@ -300,3 +300,42 @@ export default function Home() {
     </main>
   );
 }
+
+const EkdhunIcon = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="512"
+    height="512"
+    fill="none"
+    viewBox="0 0 512 512"
+  >
+    <path
+      stroke="url(#paint0_linear_1_2)"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="25"
+      d="M154 83c-19-11-43 3-43 26v294c0 23 24 37 43 26l237-138c19-11 19-39 0-50z"
+    ></path>
+    <path
+      stroke="#fff"
+      strokeLinecap="round"
+      strokeWidth="17"
+      d="M163 235v42M199 216v80M235 190v132M271 216v80M307 235v42"
+    ></path>
+    <defs>
+      <linearGradient
+        id="paint0_linear_1_2"
+        x1="104"
+        x2="410"
+        y1="100"
+        y2="412"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#B84DFF"></stop>
+        <stop offset="0.52" stopColor="#7B5CFF"></stop>
+        <stop offset="1" stopColor="#00C8F5"></stop>
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
