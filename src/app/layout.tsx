@@ -153,6 +153,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
 
   category: "music",
+
+  verification: {
+    google: "SHyjlgl1v2Bu6s2OVyZ8obCgVdN8THG3plSGeSKdpMA",
+  },
 };
 
 export const viewport: Viewport = {
