@@ -36,14 +36,14 @@ export default function RoomPageClient({ code }: { code: string }) {
       >
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="fixed top-3 z-[45] p-3 rounded-xl
-          bg-[#151D32] border border-white/10
-          hover:bg-[#202B45] transition-all duration-300 ease-in-out"
+          className={`fixed top-3 z-[45] p-3 rounded-xl
+           backdrop-filter backdrop-blur-xl border border-white/10
+          transition-all duration-300 ease-in-out
+          ${isSidebarOpen
+            ? "left-[97%] -translate-x-full md:left-[26%] md:translate-x-0"
+            : "left-3"
+          }`}
           aria-label="Toggle session info"
-          style={{
-            left: isSidebarOpen ? "auto" : "20px",
-            right: isSidebarOpen ? "12px" : "auto",
-          }}
         >
           <span
             className="flex items-center justify-center transition-transform duration-500 ease-in-out"

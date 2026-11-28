@@ -17,7 +17,9 @@ import {
   FaEllipsisVertical,
   FaPenToSquare,
   FaCheck,
+  FaUpload,
 } from "react-icons/fa6";
+import { FaCircleNotch, FaTruckLoading } from "react-icons/fa";
 
 type Role = "host" | "admin" | "member";
 
@@ -436,9 +438,16 @@ export default function SessionInfo({ code }: { code: string }) {
         <h1 className="text-3xl font-bold">{room.name || "Session"}</h1>
 
         <div className="flex items-center justify-between">
-          <p className="text-cyan-400">
-            Room Code: {room.room_code}
-          </p>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(url);
+            }}
+            className="flex items-center gap-2 rounded-lg px-3 py-1 text-sm cursor-copy"
+          >
+            <p className="text-cyan-400">
+              Room Code: {room.room_code}
+            </p>
+          </button>
 
           <button
             onClick={() => setShowQR(!showQR)}
@@ -474,9 +483,9 @@ export default function SessionInfo({ code }: { code: string }) {
                     setNameError("");
                     setEditingName(true);
                   }}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-cyan-400/20 px-3 py-2 text-xs text-cyan-300 hover:bg-cyan-400/10"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg p-3 text-xs text-cyan-300 hover:bg-cyan-400/10"
                 >
-                  <FaPenToSquare /> Edit name
+                  <FaPenToSquare />
                 </button>
               ) : (
                 <div className="flex shrink-0 items-center gap-2">
@@ -486,7 +495,7 @@ export default function SessionInfo({ code }: { code: string }) {
                     onClick={() => void saveDisplayName()}
                     className="rounded-lg bg-cyan-400 px-3 py-2 text-xs font-semibold text-slate-950 disabled:opacity-50"
                   >
-                    <FaCheck className="inline" /> {nameSaving ? "Saving" : "Save"}
+                    {nameSaving ? <FaCircleNotch className="inline animate-spin" /> : <FaCheck className="inline" />}
                   </button>
                   <button
                     type="button"
@@ -494,7 +503,7 @@ export default function SessionInfo({ code }: { code: string }) {
                     onClick={() => { setEditingName(false); setNameError(""); }}
                     className="rounded-lg bg-white/10 px-3 py-2 text-xs text-white"
                   >
-                    Cancel
+                    <FaXmark className="inline" />
                   </button>
                 </div>
               )}
@@ -661,6 +670,7 @@ export default function SessionInfo({ code }: { code: string }) {
           )}
         </div>
       </section>
+      <div style={{ height: "100px" }} />
     </section>
   );
 }

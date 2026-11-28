@@ -44,6 +44,7 @@ import {
 } from "react-icons/fa6";
 import { BsRepeat, BsRepeat1 } from "react-icons/bs";
 import { GoScreenFull } from "react-icons/go";
+import { log } from "next/dist/server/typescript/utils";
 
 type MediaType = "youtube" | "audio";
 
@@ -313,6 +314,9 @@ export default function YouTubePlayer({
   const onYouTubeEndedRef = useRef<() => void>(() => {});
   const onPresenceJoinRef = useRef<() => void>(() => {});
   const onPresenceLeaveRef = useRef<(leftUserIds: string[]) => void>(() => {});
+
+  const searchBarRef = useRef<HTMLDivElement | null>(null);
+  const mobileSyncBadgeRef = useRef<HTMLDivElement | null>(null);
 
   // --------------------------------------------------
   // React state
@@ -1906,6 +1910,9 @@ export default function YouTubePlayer({
             playsinline: 1,
             controls: 0,
             rel: 0,
+            modestbranding: 1,
+            iv_load_policy: 3,
+            showinfo: 0,
           },
 
           events: {
@@ -1917,6 +1924,9 @@ export default function YouTubePlayer({
                 "allow",
                 "autoplay; encrypted-media; picture-in-picture; fullscreen"
               );
+              // All playback controls are provided by this component, so disable
+              // iframe pointer interaction to prevent YouTube hover chrome/tooltips.
+              if (iframe) iframe.style.pointerEvents = "none";
               playerRef.current?.setVolume?.(volumeRef.current);
               const pendingCue = pendingYouTubeCueRef.current;
               const readyPlayer = playerRef.current;
@@ -2921,12 +2931,41 @@ export default function YouTubePlayer({
     }
   }
 
+  // useEffect(() => {
+  //   window.addEventListener("wheel", (e) => {
+  //     if(!mobileSyncBadgeRef.current) return;
+  //     if(e.deltaY > 0) {
+  //       mobileSyncBadgeRef.current.style.transform = "translateX(110%)";
+  //       setTimeout(() => {
+  //         if(!mobileSyncBadgeRef.current) return;
+  //         mobileSyncBadgeRef.current.style.transform = "translateY(-110%)";
+  //       }, 2000)
+  //     } else {
+  //       mobileSyncBadgeRef.current.style.transform = "translateY(0)";
+  //       setTimeout(() => {
+  //         if(!mobileSyncBadgeRef.current) return;
+  //         mobileSyncBadgeRef.current.style.transform = "translateX(0)";
+  //       }, 2000)
+  //     }
+  //   })
+  //   return () => {
+  //     window.removeEventListener("wheel", () => {
+  //       console.log("scrolling")
+  //     })
+  //   }
+  // }, [])
+
   return (
     <section className="border border-white/10 bg-[#07101f] p-3 pb-28">
       {/* Top section: search + room/sync status */}
-      <div className="relative z-30 mb-4 rounded-2xl">
+      <div className="z-50 mb-4 rounded-2xl sticky top-3 items-end sm:ml-15">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-        <div className="w-12"></div>
+          <div className="flex shrink-0 flex-row flex-wrap items-center gap-2 border-white/10 p-1.5 mb-1 lg:min-w-48 lg:flex-col lg:items-stretch lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0 justify-end sm:hidden duration-200 fill-mode-forwards" ref={mobileSyncBadgeRef}>
+            <div className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 backdrop-filter backdrop-blur-xl">
+              <span className={`h-2 w-2 rounded-full ${syncBadge ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
+              <span className="text-xs font-medium text-gray-200">{syncBadge || status}</span>
+            </div>
+          </div>
           <div className="min-w-0 flex-1">
             <div className="relative">
                 <div className="flex gap-2">
@@ -2942,7 +2981,7 @@ export default function YouTubePlayer({
                       }
                     }}
                     placeholder="Search songs, artists, or paste a YouTube URL..."
-                    className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#07101f] px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-500"
+                    className="min-w-0 flex-1 rounded-xl border border-white/10  backdrop-filter backdrop-blur-xl px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-500"
                   />
                 </div>
 
@@ -2986,8 +3025,8 @@ export default function YouTubePlayer({
               </div>
           </div>
 
-          <div className="flex shrink-0 flex-row flex-wrap items-center gap-2 border-t border-white/10 pt-3 lg:min-w-48 lg:flex-col lg:items-stretch lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#07101f] px-3 py-2">
+          <div className="sm:flex shrink-0 flex-row flex-wrap items-center gap-2 border-t border-white/10 pt-3 lg:min-w-48 lg:flex-col lg:items-stretch lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0 hidden">
+            <div className="flex items-center gap-2 rounded-xl border border-white/10  backdrop-filter backdrop-blur-xl px-3 py-2">
               <span className={`h-2 w-2 rounded-full ${syncBadge ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
               <span className="text-xs font-medium text-gray-200">{syncBadge || status}</span>
             </div>
@@ -3031,16 +3070,6 @@ export default function YouTubePlayer({
                       <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-2xl text-cyan-300"><FaMusic /></div>
                       <p className="text-sm text-gray-400">Your synchronized video will appear here</p>
                     </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/20" />
-                  {hasMedia && activeMediaType === "youtube" && (
-                    <button
-                      type="button"
-                      onClick={() => setIsVideoVisible(true)}
-                      className="absolute rounded-full border border-white/20 bg-black/50 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-cyan-500 hover:text-[#06101B]"
-                    >
-                      ▶ Show video
-                    </button>
                   )}
                 </div>
               )}
