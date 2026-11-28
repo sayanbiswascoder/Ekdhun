@@ -14,7 +14,7 @@ import {
   Plus,
   Users,
 } from "lucide-react";
-
+import { JsonLd } from "@/components/JsonLD";
 import { useUser } from "@/components/providers/UserProvider";
 import { createRoom, joinRoom } from "@/lib/rooms";
 import { generateGuestName } from "@/lib/identity";
@@ -22,6 +22,37 @@ import { generateRoomName } from "@/lib/roomName";
 import PreviousRooms from "@/components/PreviousRooms";
 
 type Mode = "create" | "join";
+
+const faqSchema = {
+  "@type": "FAQPage",
+  "@id": "https://ekdhun.vercel.app/#faq",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I listen to music together with friends on ekdhun?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Enter your display name (Optional), click 'Create listening room' on ekdhun, and share the generated private room code or invite link with your friends. Playback stays automatically synchronized for everyone in the room."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are ekdhun music rooms private?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Rooms on ekdhun are private by default and are never listed in a public directory. Only people with your unique room code or invite link can join."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to create an account to use ekdhun?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. ekdhun is completely free to use with zero sign-up or account creation required."
+      }
+    }
+  ]
+};
 
 export default function Home() {
   const router = useRouter();
@@ -90,6 +121,7 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#080D18] text-white selection:bg-cyan-400/30">
+      <JsonLd data={faqSchema} />
 
       {/* Ambient background */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -103,10 +135,9 @@ export default function Home() {
 
         {/* Navbar */}
         <header className="flex h-[76px] items-center justify-between border-b border-white/[0.07]">
-          <a href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-300/20 bg-cyan-300/[0.08] text-cyan-300 p-1">
-              <EkdhunIcon />
-            </div>
+          <a href="/" className="flex items-center gap-2.5 border-0">
+              <img src="/ekdhun-icon.png" alt="Ekdhun Icon" className="object-contain h-9 w-9" />
+            
             <span className="text-lg font-semibold tracking-tight">
               ek<span className="text-cyan-300">dhun</span>
             </span>
@@ -118,234 +149,232 @@ export default function Home() {
           </div>
         </header>
 
-        
-{/* Main content */}
-<section className="flex flex-1 items-center justify-center py-6 sm:py-8">
-  <div className="grid w-full min-w-0 max-w-5xl grid-cols-[minmax(0,1fr)] items-center gap-8 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-14">
 
-    {/* Left: Compact brand statement */}
-    <div className="home-intro max-w-xl">
-      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3.5 py-2 text-xs text-slate-300">
-        <Headphones size={14} className="text-cyan-300" />
-        A little closer, even when miles apart
-      </div>
+        {/* Main content */}
+        <section className="flex flex-1 items-center justify-center py-6 sm:py-8">
+          <div className="grid w-full min-w-0 max-w-5xl grid-cols-[minmax(0,1fr)] items-center gap-8 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-14">
 
-      <div className="mb-5 flex h-10 items-center gap-[5px]">
-        {[18, 30, 43, 25, 38, 48, 24, 36, 17, 30, 44, 20].map(
-          (height, index) => (
-            <span
-              key={index}
-              className="sound-bar w-[3px] rounded-full bg-cyan-300"
-              style={{
-                height: `${height}px`,
-                animationDelay: `${index * 90}ms`,
-              }}
-            />
-          )
-        )}
-      </div>
+            {/* Left: Compact brand statement */}
+            <div className="home-intro max-w-xl">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3.5 py-2 text-xs text-slate-300">
+                <Headphones size={14} className="text-cyan-300" />
+                A little closer, even when miles apart
+              </div>
 
-      <h1 className="text-4xl font-semibold leading-[1.08] tracking-[-0.055em] sm:text-5xl lg:text-[62px]">
-        Music is better
-        <br />
-        <span className="text-slate-500">when shared.</span>
-      </h1>
+              <div className="mb-5 flex h-10 items-center gap-[5px]">
+                {[18, 30, 43, 25, 38, 48, 24, 36, 17, 30, 44, 20].map(
+                  (height, index) => (
+                    <span
+                      key={index}
+                      className="sound-bar w-[3px] rounded-full bg-cyan-300"
+                      style={{
+                        height: `${height}px`,
+                        animationDelay: `${index * 90}ms`,
+                      }}
+                    />
+                  )
+                )}
+              </div>
 
-      <p className="mt-5 max-w-md text-sm leading-6 text-slate-400 sm:text-base sm:leading-7">
-        Create a listening room, invite your people, and
-        experience every beat together — wherever you are.
-      </p>
+              <h1 className="text-4xl font-semibold leading-[1.08] tracking-[-0.055em] sm:text-5xl lg:text-[62px]">
+                Music is better
+                <br />
+                <span className="text-slate-500">when shared.</span>
+              </h1>
 
-      <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-slate-400 sm:text-sm">
-        <div className="flex items-center gap-2">
-          <AudioLines size={16} className="text-cyan-300" />
-          Synchronized playback
-        </div>
-        <div className="flex items-center gap-2">
-          <Users size={16} className="text-cyan-300" />
-          Shared listening
-        </div>
-      </div>
-    </div>
+              <p className="mt-5 max-w-md text-sm leading-6 text-slate-400 sm:text-base sm:leading-7">
+                Create a listening room, invite your people, and
+                experience every beat together — wherever you are.
+              </p>
 
-    {/* Right: Room panel + previous rooms */}
-    <div className="home-panel w-full min-w-0 max-w-full space-y-5">
+              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-slate-400 sm:text-sm">
+                <div className="flex items-center gap-2">
+                  <AudioLines size={16} className="text-cyan-300" />
+                  Synchronized playback
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users size={16} className="text-cyan-300" />
+                  Shared listening
+                </div>
+              </div>
+            </div>
 
-      {/* Existing Create / Join card */}
-      <div className="rounded-2xl border border-white/[0.09] bg-[#101927]/90 p-5 shadow-[0_24px_100px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6">
+            {/* Right: Room panel + previous rooms */}
+            <div className="home-panel w-full min-w-0 max-w-full space-y-5">
 
-        <div className="mb-5">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-cyan-300">
-            Get started
-          </p>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight">
-            Your next listening session.
-          </h2>
-          <p className="mt-1.5 text-sm text-slate-400">
-            Create a new room or join your friends.
-          </p>
-        </div>
+              {/* Existing Create / Join card */}
+              <div className="rounded-2xl border border-white/[0.09] bg-[#101927]/90 p-5 shadow-[0_24px_100px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-6">
 
-        {/* Display name */}
-        <label className="mb-2 block text-xs font-medium text-slate-300">
-          YOUR NAME
-        </label>
+                <div className="mb-5">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-cyan-300">
+                    Get started
+                  </p>
+                  <h2 className="mt-2 text-xl font-semibold tracking-tight">
+                    Your next listening session.
+                  </h2>
+                  <p className="mt-1.5 text-sm text-slate-400">
+                    Create a new room or join your friends.
+                  </p>
+                </div>
 
-        <div className="relative mb-5">
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            maxLength={30}
-            placeholder="Enter your display name"
-            className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 pr-12 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
-          />
+                {/* Display name */}
+                <label className="mb-2 block text-xs font-medium text-slate-300">
+                  YOUR NAME
+                </label>
 
-          {!profile?.username && <button
-            type="button"
-            title="Generate a name"
-            onClick={() => setUsername(generateGuestName())}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-cyan-300"
-          >
-            <Dices size={17} />
-          </button>}
-        </div>
+                <div className="relative mb-5">
+                  <input
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    maxLength={30}
+                    placeholder="Enter your display name"
+                    className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 pr-12 text-sm text-white outline-none transition-all placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+                  />
 
-        {/* Mode tabs */}
-        <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-white/[0.06] bg-[#080F1B] p-1">
-          <button
-            type="button"
-            onClick={() => {
-              setMode("create");
-              setError("");
-            }}
-            className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ${
-              mode === "create"
-                ? "bg-[#1B3442] text-cyan-200 shadow-sm"
-                : "text-slate-500 hover:text-slate-200"
-            }`}
-          >
-            <Plus size={16} />
-            Create room
-          </button>
+                  {!profile?.username && <button
+                    type="button"
+                    title="Generate a name"
+                    onClick={() => setUsername(generateGuestName())}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-cyan-300"
+                  >
+                    <Dices size={17} />
+                  </button>}
+                </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setMode("join");
-              setError("");
-            }}
-            className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ${
-              mode === "join"
-                ? "bg-[#1B3442] text-cyan-200 shadow-sm"
-                : "text-slate-500 hover:text-slate-200"
-            }`}
-          >
-            <Users size={16} />
-            Join room
-          </button>
-        </div>
+                {/* Mode tabs */}
+                <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-white/[0.06] bg-[#080F1B] p-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("create");
+                      setError("");
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ${mode === "create"
+                        ? "bg-[#1B3442] text-cyan-200 shadow-sm"
+                        : "text-slate-500 hover:text-slate-200"
+                      }`}
+                  >
+                    <Plus size={16} />
+                    Create room
+                  </button>
 
-        {/* Room input */}
-        <div key={mode} className="mode-content">
-          {mode === "create" ? (
-            <>
-              <label className="mb-2 block text-xs font-medium text-slate-300">
-                ROOM NAME
-              </label>
-              <div className="relative mb-5">
-                <input
-                  value={roomName}
-                  onChange={(e) => setRoomName(e.target.value)}
-                  maxLength={60}
-                  placeholder="Give your room a name"
-                  className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 text-sm outline-none transition-all placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
-                />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("join");
+                      setError("");
+                    }}
+                    className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ${mode === "join"
+                        ? "bg-[#1B3442] text-cyan-200 shadow-sm"
+                        : "text-slate-500 hover:text-slate-200"
+                      }`}
+                  >
+                    <Users size={16} />
+                    Join room
+                  </button>
+                </div>
+
+                {/* Room input */}
+                <div key={mode} className="mode-content">
+                  {mode === "create" ? (
+                    <>
+                      <label className="mb-2 block text-xs font-medium text-slate-300">
+                        ROOM NAME
+                      </label>
+                      <div className="relative mb-5">
+                        <input
+                          value={roomName}
+                          onChange={(e) => setRoomName(e.target.value)}
+                          maxLength={60}
+                          placeholder="Give your room a name"
+                          className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 text-sm outline-none transition-all placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setRoomName(generateRoomName())}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-cyan-300"
+                          title="Generate another room name"
+                        >
+                          <Dices size={17} />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <label className="mb-2 block text-xs font-medium text-slate-300">
+                        ROOM CODE
+                      </label>
+                      <input
+                        value={roomCode}
+                        onChange={(e) =>
+                          setRoomCode(
+                            e.target.value
+                              .toUpperCase()
+                              .replace(/[^A-Z0-9]/g, "")
+                              .slice(0, 6)
+                          )
+                        }
+                        maxLength={6}
+                        placeholder="Enter your 6-character code"
+                        className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 text-sm uppercase tracking-[0.25em] outline-none transition-all placeholder:normal-case placeholder:tracking-normal placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+                      />
+                    </>
+                  )}
+                </div>
+
+
+                {/* Previous rooms - horizontal carousel */}
+                <div className="mt-5 w-full min-w-0 max-w-full">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <label className="text-xs font-medium text-slate-300">
+                      RECENT ROOMS
+                    </label>
+
+                    <span className="shrink-0 text-[10px] text-slate-500">
+                      Scroll to explore →
+                    </span>
+                  </div>
+
+                  <PreviousRooms userId={user?.id ?? null} />
+                </div>
+
+
+                {(error || authError) && (
+                  <p className="mt-3 text-sm text-red-400">
+                    {error || authError}
+                  </p>
+                )}
+
                 <button
                   type="button"
-                  onClick={() => setRoomName(generateRoomName())}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-500 transition-colors hover:bg-white/5 hover:text-cyan-300"
-                  title="Generate another room name"
+                  onClick={handleContinue}
+                  disabled={loading || !ready}
+                  className="group mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 py-3 text-sm font-semibold text-[#07111B] transition-all duration-200 hover:bg-cyan-200 hover:shadow-[0_0_28px_rgba(103,232,249,0.16)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Dices size={17} />
+                  {loading || authLoading ? (
+                    <>
+                      <Loader2 size={17} className="animate-spin" />
+                      {authLoading ? "Preparing your session..." : "Please wait..."}
+                    </>
+                  ) : (
+                    <>
+                      {mode === "create" ? "Create listening room" : "Join listening room"}
+                      <ArrowRight
+                        size={17}
+                        className="transition-transform duration-200 group-hover:translate-x-1"
+                      />
+                    </>
+                  )}
                 </button>
+
+                <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+                  <Check size={13} className="text-emerald-400" />
+                  Free to use · No account required
+                </div>
               </div>
-            </>
-          ) : (
-            <>
-              <label className="mb-2 block text-xs font-medium text-slate-300">
-                ROOM CODE
-              </label>
-              <input
-                value={roomCode}
-                onChange={(e) =>
-                  setRoomCode(
-                    e.target.value
-                      .toUpperCase()
-                      .replace(/[^A-Z0-9]/g, "")
-                      .slice(0, 6)
-                  )
-                }
-                maxLength={6}
-                placeholder="Enter your 6-character code"
-                className="w-full rounded-xl border border-white/10 bg-[#080F1B] px-4 py-3 text-sm uppercase tracking-[0.25em] outline-none transition-all placeholder:normal-case placeholder:tracking-normal placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
-              />
-            </>
-          )}
-        </div>
-
-
-{/* Previous rooms - horizontal carousel */}
-<div className="mt-5 w-full min-w-0 max-w-full">
-  <div className="mb-2 flex items-center justify-between gap-2">
-    <label className="text-xs font-medium text-slate-300">
-      RECENT ROOMS
-    </label>
-
-    <span className="shrink-0 text-[10px] text-slate-500">
-      Scroll to explore →
-    </span>
-  </div>
-
-  <PreviousRooms userId={user?.id ?? null} />
-</div>
-
-
-        {(error || authError) && (
-          <p className="mt-3 text-sm text-red-400">
-            {error || authError}
-          </p>
-        )}
-
-        <button
-          type="button"
-          onClick={handleContinue}
-          disabled={loading || !ready}
-          className="group mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 py-3 text-sm font-semibold text-[#07111B] transition-all duration-200 hover:bg-cyan-200 hover:shadow-[0_0_28px_rgba(103,232,249,0.16)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {loading || authLoading ? (
-            <>
-              <Loader2 size={17} className="animate-spin" />
-              {authLoading ? "Preparing your session..." : "Please wait..."}
-            </>
-          ) : (
-            <>
-              {mode === "create" ? "Create listening room" : "Join listening room"}
-              <ArrowRight
-                size={17}
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              />
-            </>
-          )}
-        </button>
-
-        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
-          <Check size={13} className="text-emerald-400" />
-          Free to use · No account required
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+            </div>
+          </div>
+        </section>
 
 
         {/* Footer */}

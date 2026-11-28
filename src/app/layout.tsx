@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { UserProvider } from "@/components/providers/UserProvider";
+import { JsonLd } from "@/components/JsonLD";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,6 +22,28 @@ const siteName = "Ekdhun";
 const description =
   "One tune, shared together. Create listening rooms, invite friends, and enjoy synchronized music playback together in real time.";
 
+const appSchema = {
+  "@type": "WebApplication",
+  "@id": "https://ekdhun.vercel.app/#webapp",
+  "name": "ekdhun",
+  "url": "https://ekdhun.vercel.app",
+  "description": "Private, real-time synchronized music rooms that let friends listen to music together online with millisecond playback sync and no account required.",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web Browser",
+  "browserRequirements": "Requires JavaScript. Compatible with Chrome, Safari, Firefox, and Edge.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  },
+  "featureList": [
+    "Real-time millisecond playback synchronization",
+    "Private invite-only music rooms",
+    "Zero registration or account required",
+    "Instant shareable room codes"
+  ]
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
@@ -34,74 +57,74 @@ export const metadata: Metadata = {
   applicationName: siteName,
 
   keywords: [
-  // Brand keywords
-  "Ekdhun",
-  "Ekdhun music",
-  "Ekdhun listening rooms",
-  "Ek Dhun",
+    // Brand keywords
+    "Ekdhun",
+    "Ekdhun music",
+    "Ekdhun listening rooms",
+    "Ek Dhun",
 
-  "Sync Music",
-  "Beat Sync",
-  "beatsync",
+    "Sync Music",
+    "Beat Sync",
+    "beatsync",
 
-  // Core product keywords
-  "listen to music together",
-  "synchronized music listening",
-  "sync music with friends",
-  "real time music synchronization",
-  "online music listening room",
-  "shared music listening",
-  "group music listening",
-  "virtual listening room",
-  "collaborative music listening",
+    // Core product keywords
+    "listen to music together",
+    "synchronized music listening",
+    "sync music with friends",
+    "real time music synchronization",
+    "online music listening room",
+    "shared music listening",
+    "group music listening",
+    "virtual listening room",
+    "collaborative music listening",
 
-  // Listening party keywords
-  "online listening party",
-  "virtual music party",
-  "listen party with friends",
-  "music party online",
-  "watch and listen together",
-  "listen together online",
-  "private music listening room",
-  "create music listening room",
+    // Listening party keywords
+    "online listening party",
+    "virtual music party",
+    "listen party with friends",
+    "music party online",
+    "watch and listen together",
+    "listen together online",
+    "private music listening room",
+    "create music listening room",
 
-  // YouTube-related keywords
-  "YouTube listening party",
-  "YouTube music with friends",
-  "listen to YouTube together",
-  "synchronized YouTube playback",
-  "YouTube sync player",
-  "shared YouTube music",
-  "play YouTube videos together",
+    // YouTube-related keywords
+    "YouTube listening party",
+    "YouTube music with friends",
+    "listen to YouTube together",
+    "synchronized YouTube playback",
+    "YouTube sync player",
+    "shared YouTube music",
+    "play YouTube videos together",
 
-  // Social music keywords
-  "music sharing with friends",
-  "listen to songs with friends online",
-  "music rooms with friends",
-  "online music community",
-  "social music platform",
-  "virtual music hangout",
-  "music sharing platform",
+    // Social music keywords
+    "music sharing with friends",
+    "listen to songs with friends online",
+    "music rooms with friends",
+    "online music community",
+    "social music platform",
+    "virtual music hangout",
+    "music sharing platform",
 
-  // Feature-based keywords
-  "synchronized music player",
-  "real time listening rooms",
-  "shared music queue",
-  "synchronized playback player",
-  "online group music player",
-  "private listening rooms",
-  "invite friends to listen",
-  "listen together remotely",
-  "cross device music synchronization",
+    // Feature-based keywords
+    "synchronized music player",
+    "real time listening rooms",
+    "shared music queue",
+    "synchronized playback player",
+    "online group music player",
+    "private listening rooms",
+    "invite friends to listen",
+    "listen together remotely",
+    "cross device music synchronization",
 
-  // Search intent keywords
-  "how to listen to music together online",
-  "best app to listen to music with friends",
-  "listen to music together remotely",
-  "listen to YouTube with friends online",
-  "free online listening party",
-  "music synchronization website",
-],
+    // Search intent keywords
+    "how to listen to music together online",
+    "best app to listen to music with friends",
+    "listen to music together remotely",
+    "listen to YouTube with friends online",
+    "free online listening party",
+    "music synchronization website",
+  ],
 
   authors: [{ name: "Sayan Biswas" }],
   creator: "Sayan Biswas",
@@ -150,7 +173,7 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      { url: "/ekdhun-icon.svg", type: "image/svg+xml" },
+      { url: "/ekdhun-icon.png", type: "image/png" },
       { url: "/favicon.ico", sizes: "any" },
     ],
     apple: "/apple-touch-icon.png",
@@ -199,6 +222,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <JsonLd data={appSchema} />
       <body className="min-h-full flex flex-col">
         <UserProvider>{children}</UserProvider>
       </body>

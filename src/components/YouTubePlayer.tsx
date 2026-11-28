@@ -35,7 +35,6 @@ import {
   FaPause,
   FaBackwardStep,
   FaForwardStep,
-  FaRepeat,
   FaVolumeHigh,
   FaVolumeXmark,
   FaMusic,
@@ -3068,7 +3067,7 @@ export default function YouTubePlayer({
               )}
 
               {/* Video controls stay anchored inside the bottom-right of the media frame. */}
-              <div className="absolute bottom-3 right-3 flex items-center gap-2">
+              <div className="absolute bottom-3 right-3 flex items-center gap-2 z-10">
                 <button
                   type="button"
                   onClick={() => setIsVideoVisible((visible) => !visible)}
