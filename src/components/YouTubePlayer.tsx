@@ -59,15 +59,15 @@ type SearchResult = {
 
 type PlaybackEvent = {
   action:
-    | "load"
-    | "play"
-    | "pause"
-    | "seek"
-    | "sync"
-    | "prepare_playback"
-    | "ready"
-    | "schedule_play"
-    | "volume";
+  | "load"
+  | "play"
+  | "pause"
+  | "seek"
+  | "sync"
+  | "prepare_playback"
+  | "ready"
+  | "schedule_play"
+  | "volume";
 
   mediaType?: MediaType;
   videoId?: string;
@@ -307,16 +307,13 @@ export default function YouTubePlayer({
 
   // Callback refs to keep YT.Player and Realtime channel effects stable
   const handlePlaybackEventRef = useRef<(event: PlaybackEvent) => Promise<void>>(
-    async () => {}
+    async () => { }
   );
-  const onMediaReadyRef = useRef<() => void>(() => {});
-  const onYouTubePlayingRef = useRef<() => void>(() => {});
-  const onYouTubeEndedRef = useRef<() => void>(() => {});
-  const onPresenceJoinRef = useRef<() => void>(() => {});
-  const onPresenceLeaveRef = useRef<(leftUserIds: string[]) => void>(() => {});
-
-  const searchBarRef = useRef<HTMLDivElement | null>(null);
-  const mobileSyncBadgeRef = useRef<HTMLDivElement | null>(null);
+  const onMediaReadyRef = useRef<() => void>(() => { });
+  const onYouTubePlayingRef = useRef<() => void>(() => { });
+  const onYouTubeEndedRef = useRef<() => void>(() => { });
+  const onPresenceJoinRef = useRef<() => void>(() => { });
+  const onPresenceLeaveRef = useRef<(leftUserIds: string[]) => void>(() => { });
 
   // --------------------------------------------------
   // React state
@@ -340,6 +337,8 @@ export default function YouTubePlayer({
   const [coordinatorId, setCoordinatorId] = useState<string | null>(null);
   const isCoordinator = coordinatorId === userId;
   const coordinatorRef = useRef<string | null>(null);
+
+  const [statusExpanded, setStatusExpanded] = useState(false);
 
   const [videoId, setVideoId] = useState("");
   const [audioLoaded, setAudioLoaded] = useState(false);
@@ -970,9 +969,9 @@ export default function YouTubePlayer({
       const leadMs =
         mediaTypeRef.current === "youtube" && rawDelayMs > 50
           ? Math.min(
-              estimatedYouTubeStartupMsRef.current,
-              Math.max(0, rawDelayMs - 20)
-            )
+            estimatedYouTubeStartupMsRef.current,
+            Math.max(0, rawDelayMs - 20)
+          )
           : 0;
 
       const timerDelayMs = Math.max(0, rawDelayMs - leadMs);
@@ -1034,8 +1033,8 @@ export default function YouTubePlayer({
           const targetPosition =
             lateSeconds > 0
               ? event.position! +
-                lateSeconds +
-                estimatedYouTubeStartupMsRef.current / 1000
+              lateSeconds +
+              estimatedYouTubeStartupMsRef.current / 1000
               : event.position!;
 
           if (Math.abs(getCurrentPosition() - targetPosition) > 0.2) {
@@ -1632,11 +1631,11 @@ export default function YouTubePlayer({
         const clock = await ensureClock();
         const targetPosition = clock
           ? computeTargetPosition(
-              event.position,
-              Boolean(event.isPlaying ?? intendedPlayingRef.current),
-              event.sentAt,
-              clock.now()
-            )
+            event.position,
+            Boolean(event.isPlaying ?? intendedPlayingRef.current),
+            event.sentAt,
+            clock.now()
+          )
           : event.position;
 
         if (mediaTypeRef.current === "audio") {
@@ -2931,73 +2930,46 @@ export default function YouTubePlayer({
     }
   }
 
-  // useEffect(() => {
-  //   window.addEventListener("wheel", (e) => {
-  //     if(!mobileSyncBadgeRef.current) return;
-  //     if(e.deltaY > 0) {
-  //       mobileSyncBadgeRef.current.style.transform = "translateX(110%)";
-  //       setTimeout(() => {
-  //         if(!mobileSyncBadgeRef.current) return;
-  //         mobileSyncBadgeRef.current.style.transform = "translateY(-110%)";
-  //       }, 2000)
-  //     } else {
-  //       mobileSyncBadgeRef.current.style.transform = "translateY(0)";
-  //       setTimeout(() => {
-  //         if(!mobileSyncBadgeRef.current) return;
-  //         mobileSyncBadgeRef.current.style.transform = "translateX(0)";
-  //       }, 2000)
-  //     }
-  //   })
-  //   return () => {
-  //     window.removeEventListener("wheel", () => {
-  //       console.log("scrolling")
-  //     })
-  //   }
-  // }, [])
-
   return (
-    <section className="border border-white/10 bg-[#07101f] p-3 pb-28">
+    <section className="border border-white/10 bg-[#07101f] p-3 pb-28 z-10 pt-18 h-screen">
       {/* Top section: search + room/sync status */}
-      <div className="z-50 mb-4 rounded-2xl sticky top-3 items-end sm:ml-15">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-          <div className="flex shrink-0 flex-row flex-wrap items-center gap-2 border-white/10 p-1.5 mb-1 lg:min-w-48 lg:flex-col lg:items-stretch lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0 justify-end sm:hidden duration-200 fill-mode-forwards" ref={mobileSyncBadgeRef}>
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 px-3 py-2 backdrop-filter backdrop-blur-xl">
-              <span className={`h-2 w-2 rounded-full ${syncBadge ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
-              <span className="text-xs font-medium text-gray-200">{syncBadge || status}</span>
-            </div>
-          </div>
-          <div className="min-w-0 flex-1">
+      <div className="z-20 mb-4 rounded-2xl fixed top-3 items-end ml-15">
+        <div className="flex gap-2 sm:gap-4 flex-row items-center  w-[calc(100vw - 60px)]" style={{width: "calc(100vw - 90px)"}}>
+          <div className="min-w-0 flex-1 transition-all duration-300 ease-out">
             <div className="relative">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        setSearchTerm((value) => value.trim());
-                        setSearchTrigger((value) => value + 1);
-                      }
-                    }}
-                    placeholder="Search songs, artists, or paste a YouTube URL..."
-                    className="min-w-0 flex-1 rounded-xl border border-white/10  backdrop-filter backdrop-blur-xl px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-500"
-                  />
-                </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onFocus={() => setStatusExpanded(false)}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      setSearchTerm((value) => value.trim());
+                      setSearchTrigger((value) => value + 1);
+                    }
+                  }}
+                  placeholder="Search songs, artists, or paste a YouTube URL..."
+                  className="min-w-0 flex-1 rounded-xl border border-white/10 backdrop-filter backdrop-blur-xl px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-500 w-full"
+                />
+              </div>
 
-                {(searchLoading || searchError || searchResults.length > 0) && searchTerm.trim() && (
-                  <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-[#081426] p-2 shadow-2xl shadow-black/50">
-                    {searchLoading && (
-                      <p className="px-3 py-2 text-xs text-cyan-300">Searching YouTube...</p>
-                    )}
-                    {searchError && (
-                      <p className="px-3 py-2 text-sm text-red-400">{searchError}</p>
-                    )}
-                    {searchResults.map((track) => (
-                      <div key={track.id} className="flex items-center gap-3 rounded-lg p-2 transition hover:bg-white/[0.05]">
-                        <img src={track.thumbnail} alt="" className="h-10 w-14 rounded object-cover" />
-                        <span className="min-w-0 flex-1 truncate text-sm text-gray-200">{track.title}</span>
-                        {canControlPlayback && <button
+              {(searchLoading || searchError || searchResults.length > 0) && searchTerm.trim() && (
+                <div className="fixed left-1/2 top-18 z-50 w-[93vw] -translate-x-1/2 max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-[#081426] p-2 shadow-2xl shadow-black/50 sm:absolute sm:left-0 sm:right-0 sm:top-full sm:mt-2 sm:w-auto sm:translate-x-0">
+                  {searchLoading && (
+                    <p className="px-3 py-2 text-xs text-cyan-300">Searching YouTube...</p>
+                  )}
+                  {searchError && (
+                    <p className="px-3 py-2 text-sm text-red-400">{searchError}</p>
+                  )}
+                  {searchResults.map((track) => (
+                    <div key={track.id} className="flex items-center gap-3 rounded-lg p-2 transition hover:bg-white/[0.05]">
+                      <img src={track.thumbnail} alt="" className="h-10 w-14 rounded object-cover" />
+                      <span className="min-w-0 flex-1 truncate text-sm text-gray-200">{track.title}</span>
+                      {canControlPlayback && (
+                        <>
+                        <button
                           type="button"
                           onClick={() => playTrackNow(track)}
                           aria-label={`Play ${track.title} now`}
@@ -3005,31 +2977,52 @@ export default function YouTubePlayer({
                           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-500 text-[#06101B] transition hover:bg-cyan-400"
                         >
                           <FaPlay />
-                        </button>}
-                        <button
-                            type="button"
-                            onClick={() => addTrackToQueue(track)}
-                            aria-label={`Add ${track.title} to queue`}
-                            title="Add to queue"
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 text-gray-300 transition hover:border-cyan-400/40 hover:bg-cyan-400/10 hover:text-cyan-300"
-                          >
-                            <FaPlus />
                         </button>
-                      </div>
-                    ))}
-                    {!searchLoading && !searchError && searchResults.length === 0 && (
-                      <p className="px-3 py-2 text-xs text-gray-500">No results found.</p>
-                    )}
-                  </div>
-                )}
-              </div>
+                      
+                      <button
+                        type="button"
+                        onClick={() => addTrackToQueue(track)}
+                        aria-label={`Add ${track.title} to queue`}
+                        title="Add to queue"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 text-gray-300 transition hover:border-cyan-400/40 hover:bg-cyan-400/10 hover:text-cyan-300"
+                      >
+                        <FaPlus />
+                      </button>
+                      </>
+                      )}
+                    </div>
+                  ))}
+                  {!searchLoading && !searchError && searchResults.length === 0 && (
+                    <p className="px-3 py-2 text-xs text-gray-500">No results found.</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="sm:flex shrink-0 flex-row flex-wrap items-center gap-2 border-t border-white/10 pt-3 lg:min-w-48 lg:flex-col lg:items-stretch lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0 hidden">
-            <div className="flex items-center gap-2 rounded-xl border border-white/10  backdrop-filter backdrop-blur-xl px-3 py-2">
-              <span className={`h-2 w-2 rounded-full ${syncBadge ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
-              <span className="text-xs font-medium text-gray-200">{syncBadge || status}</span>
-            </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2 lg:min-w-48 flex-col border-l border-t-0 pl-2 pt-0">
+            <button
+              type="button"
+              onClick={() => setStatusExpanded((prev) => !prev)}
+              aria-expanded={statusExpanded}
+              title={syncBadge || status}
+              className="flex max-w-56 sm:max-w-none items-center rounded-xl border border-white/10 backdrop-filter backdrop-blur-xl px-3 py-2 transition-colors duration-200 hover:border-white/20 sm:cursor-default"
+            >
+              <span className={`h-2 w-2 shrink-0 rounded-full transition-colors duration-200 ${syncBadge ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`}/>
+              <span
+                className={`grid transition-[grid-template-columns,margin] duration-300 ease-out sm:grid-cols-[1fr] sm:ml-2 ${statusExpanded ? "grid-cols-[1fr] ml-2" : "grid-cols-[0fr] ml-0"
+                  }`}
+              >
+                <span
+                  className={`overflow-hidden whitespace-nowrap truncate text-xs font-medium text-gray-200 transition-all duration-300 ease-out sm:opacity-100 sm:translate-x-0 ${statusExpanded
+                      ? "opacity-100 translate-x-0"
+                      : "opacity-0 -translate-x-1 pointer-events-none"
+                    }`}
+                >
+                  {syncBadge || status}
+                </span>
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -3075,7 +3068,7 @@ export default function YouTubePlayer({
               )}
 
               {/* Video controls stay anchored inside the bottom-right of the media frame. */}
-              <div className="absolute bottom-3 right-3 z-30 flex items-center gap-2">
+              <div className="absolute bottom-3 right-3 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setIsVideoVisible((visible) => !visible)}
@@ -3126,112 +3119,113 @@ export default function YouTubePlayer({
                 const isPlayedTrack = !!currentTrack?.position && (track.position ?? 0) < currentTrack.position;
                 const isUpcomingTrack = !isCurrentQueueTrack && !isPlayedTrack;
                 return (
-                <div
-                  key={`${track.queueItemId || track.id}-${index}`}
-                  onPointerDown={(event) => {
-                    if (event.pointerType !== "touch" || (!canControlPlayback && track.addedBy !== userId)) return;
-                    if ((event.target as HTMLElement).closest("button, [data-reorder-handle]")) return;
-                    queueSwipeRef.current = {
-                      pointerId: event.pointerId,
-                      startX: event.clientX,
-                      startY: event.clientY,
-                      card: event.currentTarget,
-                    };
-                    event.currentTarget.style.transition = "none";
-                  }}
-                  onPointerMove={(event) => {
-                    const swipe = queueSwipeRef.current;
-                    if (!swipe || swipe.pointerId !== event.pointerId || swipe.card !== event.currentTarget) return;
-                    const deltaX = event.clientX - swipe.startX;
-                    const deltaY = event.clientY - swipe.startY;
-                    if (Math.abs(deltaX) > 8 && Math.abs(deltaX) > Math.abs(deltaY)) {
-                      event.currentTarget.style.transform = `translateX(${Math.max(-130, Math.min(130, deltaX))}px)`;
-                      event.currentTarget.style.opacity = String(Math.max(0.45, 1 - Math.abs(deltaX) / 260));
-                    }
-                  }}
-                  onPointerUp={(event) => {
-                    const swipe = queueSwipeRef.current;
-                    if (!swipe || swipe.pointerId !== event.pointerId || swipe.card !== event.currentTarget) return;
-                    const deltaX = event.clientX - swipe.startX;
-                    const deltaY = event.clientY - swipe.startY;
-                    queueSwipeRef.current = null;
-                    event.currentTarget.style.transition = "transform 180ms ease, opacity 180ms ease";
-                    if (Math.abs(deltaX) >= 90 && Math.abs(deltaX) > Math.abs(deltaY)) {
-                      event.currentTarget.style.transform = `translateX(${deltaX > 0 ? 140 : -140}px)`;
-                      event.currentTarget.style.opacity = "0";
-                      window.setTimeout(() => void removeQueuedTrack(track), 150);
-                    } else {
+                  <div
+                    key={`${track.queueItemId || track.id}-${index}`}
+                    onPointerDown={(event) => {
+                      if (event.pointerType !== "touch" || (!canControlPlayback && track.addedBy !== userId)) return;
+                      if ((event.target as HTMLElement).closest("button, [data-reorder-handle]")) return;
+                      queueSwipeRef.current = {
+                        pointerId: event.pointerId,
+                        startX: event.clientX,
+                        startY: event.clientY,
+                        card: event.currentTarget,
+                      };
+                      event.currentTarget.style.transition = "none";
+                    }}
+                    onPointerMove={(event) => {
+                      const swipe = queueSwipeRef.current;
+                      if (!swipe || swipe.pointerId !== event.pointerId || swipe.card !== event.currentTarget) return;
+                      const deltaX = event.clientX - swipe.startX;
+                      const deltaY = event.clientY - swipe.startY;
+                      if (Math.abs(deltaX) > 8 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                        event.currentTarget.style.transform = `translateX(${Math.max(-130, Math.min(130, deltaX))}px)`;
+                        event.currentTarget.style.opacity = String(Math.max(0.45, 1 - Math.abs(deltaX) / 260));
+                      }
+                    }}
+                    onPointerUp={(event) => {
+                      const swipe = queueSwipeRef.current;
+                      if (!swipe || swipe.pointerId !== event.pointerId || swipe.card !== event.currentTarget) return;
+                      const deltaX = event.clientX - swipe.startX;
+                      const deltaY = event.clientY - swipe.startY;
+                      queueSwipeRef.current = null;
+                      event.currentTarget.style.transition = "transform 180ms ease, opacity 180ms ease";
+                      if (Math.abs(deltaX) >= 90 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                        event.currentTarget.style.transform = `translateX(${deltaX > 0 ? 140 : -140}px)`;
+                        event.currentTarget.style.opacity = "0";
+                        window.setTimeout(() => void removeQueuedTrack(track), 150);
+                      } else {
+                        event.currentTarget.style.transform = "translateX(0)";
+                        event.currentTarget.style.opacity = "";
+                      }
+                    }}
+                    onPointerCancel={(event) => {
+                      const swipe = queueSwipeRef.current;
+                      if (!swipe || swipe.pointerId !== event.pointerId || swipe.card !== event.currentTarget) return;
+                      queueSwipeRef.current = null;
+                      event.currentTarget.style.transition = "transform 180ms ease, opacity 180ms ease";
                       event.currentTarget.style.transform = "translateX(0)";
                       event.currentTarget.style.opacity = "";
-                    }
-                  }}
-                  onPointerCancel={(event) => {
-                    const swipe = queueSwipeRef.current;
-                    if (!swipe || swipe.pointerId !== event.pointerId || swipe.card !== event.currentTarget) return;
-                    queueSwipeRef.current = null;
-                    event.currentTarget.style.transition = "transform 180ms ease, opacity 180ms ease";
-                    event.currentTarget.style.transform = "translateX(0)";
-                    event.currentTarget.style.opacity = "";
-                  }}
-                  draggable={Boolean(canControlPlayback && isUpcomingTrack && track.queueItemId)}
-                  onDragStart={(event) => {
-                    if (!canControlPlayback || !isUpcomingTrack || !track.queueItemId) {
+                    }}
+                    draggable={Boolean(canControlPlayback && isUpcomingTrack && track.queueItemId)}
+                    onDragStart={(event) => {
+                      if (!canControlPlayback || !isUpcomingTrack || !track.queueItemId) {
+                        event.preventDefault();
+                        return;
+                      }
+                      setDraggingQueueItemId(track.queueItemId);
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData("text/plain", track.queueItemId);
+                    }}
+                    onDragOver={(event) => {
+                      if (canControlPlayback && isUpcomingTrack && draggingQueueItemId) {
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = "move";
+                      }
+                    }}
+                    onDrop={(event) => {
                       event.preventDefault();
-                      return;
-                    }
-                    setDraggingQueueItemId(track.queueItemId);
-                    event.dataTransfer.effectAllowed = "move";
-                    event.dataTransfer.setData("text/plain", track.queueItemId);
-                  }}
-                  onDragOver={(event) => {
-                    if (canControlPlayback && isUpcomingTrack && draggingQueueItemId) {
-                      event.preventDefault();
-                      event.dataTransfer.dropEffect = "move";
-                    }
-                  }}
-                  onDrop={(event) => {
-                    event.preventDefault();
-                    const draggedId = event.dataTransfer.getData("text/plain") || draggingQueueItemId;
-                    if (draggedId && track.queueItemId) void reorderUpcomingTracks(draggedId, track.queueItemId);
-                    setDraggingQueueItemId(null);
-                  }}
-                  onDragEnd={() => setDraggingQueueItemId(null)}
-                  className={`group flex touch-pan-y items-center gap-2 rounded-xl border p-2 transition ${isCurrentQueueTrack ? "border-cyan-400/50 bg-cyan-400/10" : "border-transparent hover:bg-white/[0.05]"} ${isPlayedTrack ? "opacity-45" : ""} ${draggingQueueItemId === track.queueItemId ? "opacity-40" : ""} ${Boolean(canControlPlayback && isUpcomingTrack && track.queueItemId) ? "cursor-grab touch-none" : ""}`}
-                >
-                  <div className="group/thumbnail relative h-10 w-14 shrink-0 overflow-hidden rounded-lg">
-                    <img src={track.thumbnail} alt="" className="h-full w-full object-cover" />
-                    {canControlPlayback && isUpcomingTrack && (
-                      <button
-                        type="button"
-                        onClick={() => playTrackNow(track)}
-                        aria-label={`Play ${track.title}`}
-                        title={`Play ${track.title} now`}
-                        className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-25 transition-opacity duration-200 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-300 cursor-pointer"
-                      >
-                        <FaPlay className="drop-shadow" />
-                      </button>
-                    )}
+                      const draggedId = event.dataTransfer.getData("text/plain") || draggingQueueItemId;
+                      if (draggedId && track.queueItemId) void reorderUpcomingTracks(draggedId, track.queueItemId);
+                      setDraggingQueueItemId(null);
+                    }}
+                    onDragEnd={() => setDraggingQueueItemId(null)}
+                    className={`group flex touch-pan-y items-center gap-2 rounded-xl border p-2 transition ${isCurrentQueueTrack ? "border-cyan-400/50 bg-cyan-400/10" : "border-transparent hover:bg-white/[0.05]"} ${isPlayedTrack ? "opacity-45" : ""} ${draggingQueueItemId === track.queueItemId ? "opacity-40" : ""} ${Boolean(canControlPlayback && isUpcomingTrack && track.queueItemId) ? "cursor-grab touch-none" : ""}`}
+                  >
+                    <div className="group/thumbnail relative h-10 w-14 shrink-0 overflow-hidden rounded-lg">
+                      <img src={track.thumbnail} alt="" className="h-full w-full object-cover" />
+                      {canControlPlayback && isUpcomingTrack && (
+                        <button
+                          type="button"
+                          onClick={() => playTrackNow(track)}
+                          aria-label={`Play ${track.title}`}
+                          title={`Play ${track.title} now`}
+                          className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-25 transition-opacity duration-200 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-300 cursor-pointer"
+                        >
+                          <FaPlay className="drop-shadow" />
+                        </button>
+                      )}
+                    </div>
+                    <span className="min-w-0 flex-1 text-xs leading-5 text-gray-300 line-clamp-2">
+                      <span className="block">{track.title}</span>
+                      {isCurrentQueueTrack && <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-cyan-300">Now playing</span>}
+                      {!isCurrentQueueTrack && isPlayedTrack && <span className="mt-0.5 block text-[10px] text-gray-500">Played</span>}
+                    </span>
+                    <div className="ml-auto flex shrink-0 items-center gap-1">
+                      {!isCurrentQueueTrack && (canControlPlayback || track.addedBy === userId) && (
+                        <button
+                          type="button"
+                          onClick={() => void removeQueuedTrack(track)}
+                          className="rounded-md px-1.5 py-1 text-xl leading-none text-gray-500 transition hover:bg-red-500/10 hover:text-red-400"
+                          aria-label={`Remove ${track.title} from queue`}
+                          title="Remove from queue"
+                        >
+                          <FaXmark size={12} />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <span className="min-w-0 flex-1 text-xs leading-5 text-gray-300 line-clamp-2">
-                    <span className="block">{track.title}</span>
-                    {isCurrentQueueTrack && <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-cyan-300">Now playing</span>}
-                    {!isCurrentQueueTrack && isPlayedTrack && <span className="mt-0.5 block text-[10px] text-gray-500">Played</span>}
-                  </span>
-                  <div className="ml-auto flex shrink-0 items-center gap-1">
-                    {!isCurrentQueueTrack && (canControlPlayback || track.addedBy === userId) && (
-                      <button
-                        type="button"
-                        onClick={() => void removeQueuedTrack(track)}
-                        className="rounded-md px-1.5 py-1 text-xl leading-none text-gray-500 transition hover:bg-red-500/10 hover:text-red-400"
-                        aria-label={`Remove ${track.title} from queue`}
-                        title="Remove from queue"
-                      >
-                        <FaXmark size={12} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-                );})}
+                );
+              })}
             </div>
           )}
         </aside>

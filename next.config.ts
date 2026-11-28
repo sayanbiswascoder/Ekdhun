@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  allowedDevOrigins: ['2ab0-27-60-183-228.ngrok-free.app'],
+  allowedDevOrigins: ['c57f-27-60-183-54.ngrok-free.app'],
   experimental: {
     agentFeedback: true,
   },

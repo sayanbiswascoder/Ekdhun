@@ -36,7 +36,7 @@ export default function RoomPageClient({ code }: { code: string }) {
       >
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className={`fixed top-3 z-[45] p-3 rounded-xl
+          className={`fixed top-3 z-40 p-3 rounded-xl
            backdrop-filter backdrop-blur-xl border border-white/10
           transition-all duration-300 ease-in-out
           ${isSidebarOpen

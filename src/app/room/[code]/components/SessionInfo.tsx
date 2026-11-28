@@ -433,7 +433,7 @@ export default function SessionInfo({ code }: { code: string }) {
   }
 
   return (
-    <section className="h-screen overflow-y-auto rounded-lg bg-gray-800 p-4 text-white">
+    <section className="h-screen overflow-y-auto bg-gray-800 p-4 text-white z-30">
       <header className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold">{room.name || "Session"}</h1>
 
@@ -514,8 +514,8 @@ export default function SessionInfo({ code }: { code: string }) {
       </header>
 
       {showQR && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="rounded-2xl bg-white p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowQR(false)}>
+          <div className="rounded-2xl bg-white p-5" onClick={(e) => e.stopPropagation()}>
             <QRCode value={url} size={260} />
             <button
               onClick={() => setShowQR(false)}
